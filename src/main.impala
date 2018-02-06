@@ -1,0 +1,6 @@
+
+fn main() -> i32 {
+    let mpi = mpi_constants();
+    MPI_init();
+    0
+}

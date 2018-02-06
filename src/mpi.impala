@@ -1,0 +1,63 @@
+
+struct MPI_Comm {}
+struct MPI_Datatype {}
+struct MPI_Op {}
+struct MPI_Request {}
+struct MPI_Status {}
+
+extern "C" {
+    // fn MPI_Init(&i32, &[&[u8]]) -> i32;
+    fn MPI_init() -> i32;
+    fn MPI_Comm_size(MPI_Comm, &i32) -> i32;
+    fn MPI_Comm_rank(MPI_Comm, &i32) -> i32;
+    fn MPI_Allreduce(&(), &(), i32, MPI_Datatype, MPI_Op, MPI_Comm) -> i32;
+    fn MPI_Send(&(), i32, MPI_Datatype, i32, i32, MPI_Comm) -> i32;
+    fn MPI_Irecv(&(), i32, MPI_Datatype, i32, i32, MPI_Comm, &MPI_Request) -> i32;
+    fn MPI_Wait(&MPI_Request, &MPI_Status) -> i32;
+    fn MPI_Barrier(MPI_Comm, &MPI_Request) -> i32;
+    fn MPI_Finalize() -> i32;
+    fn MPI_Wtime() -> f64;
+    fn get_mpi_comm_world() -> MPI_Comm;
+    fn get_mpi_int() -> MPI_Datatype;
+    fn get_mpi_double() -> MPI_Datatype;
+    fn get_mpi_max() -> MPI_Op;
+    fn get_mpi_sum() -> MPI_Op;
+}
+
+struct MPIComms {
+    world : MPI_Comm,
+}
+
+struct MPIOps {
+    max : MPI_Op,
+    sum : MPI_Op,
+}
+
+struct MPITypes {
+    mdouble : MPI_Datatype,
+    mint : MPI_Datatype,
+}
+
+struct MPI {
+    comm : MPIComms,
+    op : MPIOps,
+    types : MPITypes
+}
+
+fn mpi_constants() -> MPI {
+    MPI {
+        comm : MPIComms {
+            world : get_mpi_comm_world(),
+        },
+        op : MPIOps {
+            max : get_mpi_max(),
+            sum : get_mpi_sum(),
+        },
+        types : MPITypes {
+            mdouble : get_mpi_double(),
+            mint : get_mpi_int(),
+        }
+    }
+}
+
+;
