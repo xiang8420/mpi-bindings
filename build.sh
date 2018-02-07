@@ -1,0 +1,1 @@
+impala -g -emit-llvm src/main.impala src/mpi.impala src/util.impala -o main; clang++ -std=c++11 -pthread -Wl,-rpath -Wl,/usr/lib/openmpi -Wl,--enable-new-dtags -L/usr/lib/openmpi -lmpi_cxx -lmpi -g main.ll src/mpi.cpp src/util.cpp -o main

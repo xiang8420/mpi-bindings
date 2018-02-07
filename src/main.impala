@@ -1,6 +1,34 @@
 
 fn main() -> i32 {
-    let mpi = mpi_constants();
-    MPI_init();
-    0
+    let mpi = mpi();
+    let start = mpi.wtime();
+    mpi.init();
+    // Get the number of processes
+    let mut world_size = -1;
+    mpi.comm_size(mpi.comms.world, &mut world_size);
+
+    // Get the rank of the process
+    let mut world_rank = -1;
+    mpi.comm_rank(mpi.comms.world, &mut world_rank);
+
+    print_i32(world_size);
+    print_string(" - ");
+    print_i32(world_rank);
+    print_string(" - ");
+    print_f64(mpi.wtime()-start);
+    print_string("\n");
+
+    let mut number : i32;
+    if (world_rank == 0) {
+        number = 42;
+        mpi.send(&mut number as MPI_mutvoidptr, 1, mpi.int_t, 1, 0, mpi.comms.world);
+    } else if (world_rank == 1) {
+        mpi.recv(&mut number as MPI_mutvoidptr, 1, mpi.int_t, 0, 0, mpi.comms.world, mpi.status.ignore);
+        print_string("Process 1 received number ");
+        print_i32(number);
+        print_string(" from process 0\n");
+    }
+
+    // Finalize the MPI environment.
+    mpi.finalize()
 }
