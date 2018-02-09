@@ -1,3 +1,7 @@
+# Impala MPI bindings
+
+So far this is only rudimentary. If you have need of more bindings, please add them and contribute any nicer wrappers you build.
+
 # Build and run
 
 Make sure impala and clang are on the PATH.
