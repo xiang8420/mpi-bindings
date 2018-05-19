@@ -1,11 +1,10 @@
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.4.3 FATAL_ERROR)
 
 project(distarray)
 enable_testing()
 
-find_package(AnyDSL-runtime REQUIRED)
-include(${ANYDSL_RUNTIME_CMAKE_DIR}/Runtime.cmake)
-include_directories(${ANYDSL_RUNTIME_DIR}/src)
+find_package(AnyDSL_runtime REQUIRED)
+include_directories(${AnyDSL_runtime_INCLUDE_DIRS})
 
 find_package(MPI REQUIRED)
 if (MPI_FOUND)
@@ -16,6 +15,7 @@ endif (MPI_FOUND)
 
 set(CLANG_FLAGS -O3 CACHE STRING "Clang compilation options")
 set(IMPALA_FLAGS --log-level info)
+set(ANYDSL_RUNTIME_LIBRARIES ${AnyDSL_runtime_LIBRARIES})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED ON)
