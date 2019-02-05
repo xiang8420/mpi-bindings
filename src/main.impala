@@ -1,14 +1,11 @@
 
 fn main() -> i32 {
-    let mpi = mpi();
-    mpi.init();
-    // Get the number of processes
-    let mut world_size = -1;
-    mpi.comm_size(mpi.comms.world, &mut world_size);
+    let mpi = comm();
 
-    // Get the rank of the process
+    let mut world_size = -1;
     let mut world_rank = -1;
-    mpi.comm_rank(mpi.comms.world, &mut world_rank);
+
+    mpi.init(&mut world_size, &mut world_rank);
 
     if (world_rank == 0) {
         print_string("size: ");
@@ -18,14 +15,14 @@ fn main() -> i32 {
 
     if (world_rank == 0) {
         let mut number = 42;
-        mpi.send(&mut number as MPI_MutBuf, 1, mpi.int_t, 1, 0, mpi.comms.world);
+        mpi.send(&mut number as COMM_Buf, 1, mpi.int_t, 1, 0);
         print_string("Process 0 sent number ");
         print_i32(number);
         print_string("\n");
     } else if (world_rank == 1) {
         let mut status : MPIStatus;
         let mut number : i32;
-        mpi.recv(&mut number as MPI_MutBuf, 1, mpi.int_t, 0, 0, mpi.comms.world, &mut status);
+        mpi.recv(&mut number as COMM_MutBuf, 1, mpi.int_t, 0, 0, &mut status);
         print_string("Process 1 received number ");
         print_i32(number);
         print_string(" from process: ");

@@ -10,7 +10,7 @@ Change the MPIStatus struct in `src/mpi.impala` if you're not using OpenMPI.
 
     mkdir build
     cd build
-    cmake .. -DAnyDSL-runtime_DIR:PATH=<add path to anydsl runtime here>/build/share/anydsl/cmake
+    cmake .. -DAnyDSL_runtime_DIR:PATH="<add path to anydsl runtime here>/build/share/anydsl/cmake"
     make
 
     mpirun -n 2 src/main
