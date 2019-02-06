@@ -29,6 +29,7 @@ extern "C" {
     fn get_mpi_int() -> COMM_Datatype;
     fn get_mpi_double() -> COMM_Datatype;
     fn get_mpi_char() -> COMM_Datatype;
+    fn get_mpi_byte() -> COMM_Datatype;
     fn get_mpi_max() -> COMM_Op;
     fn get_mpi_sum() -> COMM_Op;
     fn get_mpi_status_ignore() -> COMM_STATUS;
@@ -64,6 +65,7 @@ struct Communicator {
     int_t : COMM_Datatype,
     double_t : COMM_Datatype,
     char_t: COMM_Datatype,
+    byte_t: COMM_Datatype,
 
     //first parameter: &int for number of Nodes, second parameter: &int for current rank
     init : fn(&mut i32, &mut i32) -> i32,
@@ -113,6 +115,7 @@ fn @comm() -> Communicator {
         double_t : get_mpi_double(),
         int_t : get_mpi_int(),
         char_t: get_mpi_char(),
+        byte_t: get_mpi_byte(),
 
         init : @|numNodes,rank| {
             let status = start_COMM();
