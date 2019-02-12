@@ -1,3 +1,7 @@
+# The AnyDSL runtime library now natively supports MPI through the Communicator accessor!
+
+Explicit integration of the MPI libraries in the build script is therefore no longer required.
+
 # Impala MPI bindings
 
 So far this is only rudimentary. If you have need of more bindings, please add them and contribute any nicer wrappers you build.
