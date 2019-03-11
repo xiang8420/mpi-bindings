@@ -2,10 +2,7 @@
 fn main() -> i32 {
     let mpi = comm();
 
-    let mut world_size = -1;
-    let mut world_rank = -1;
-
-    mpi.init(&mut world_size, &mut world_rank);
+    let (world_size, world_rank) = mpi.init();
 
     if (world_rank == 0) {
         print_string("size: ");
@@ -22,18 +19,13 @@ fn main() -> i32 {
     } else if (world_rank == 1) {
         let mut status : MPIStatus;
         let mut number : i32;
-        mpi.recv(&mut number as COMM_MutBuf, 1, mpi.int_t, 0, 0, &mut status);
+        mpi.recv(&mut number as COMM_MutBuf, 1, mpi.int_t, 0, 0);
         print_string("Process 1 received number ");
         print_i32(number);
-        print_string(" from process: ");
-        print_i32(status.source);
-        print_string(" with tag: ");
-        print_i32(status.tag);
-        print_string(" and error: ");
-        print_i32(status.error);
         print_string("\n");
     }
 
     // Finalize the MPI environment.
-    mpi.finalize()
+    mpi.finalize();
+    0
 }
