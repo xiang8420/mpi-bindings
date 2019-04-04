@@ -1,6 +1,6 @@
 
 fn main() -> i32 {
-    let mpi = mpi();
+    let mpi = comm();
     mpi.init();
     // Get the number of processes
     let mut world_size = -1;
