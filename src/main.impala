@@ -12,16 +12,14 @@ fn main() -> i32 {
         print_i32(world_size);
         print_string("\n");
     }
-
+    let mut number = 2;
     if (world_rank == 0) {
-        let mut number = 42;
         mpi.send(&mut number as COMM_Buf, 1, mpi.int_t, 1, 0);
         print_string("Process 0 sent number ");
         print_i32(number);
         print_string("\n");
     } else if (world_rank == 1) {
         let mut status : MPIStatus;
-        let mut number : i32;
         mpi.recv(&mut number as COMM_MutBuf, 1, mpi.int_t, 0, 0, &mut status);
         print_string("Process 1 received number ");
         print_i32(number);
@@ -33,7 +31,27 @@ fn main() -> i32 {
         print_i32(status.error);
         print_string("\n");
     }
-
+    let mut sharebuffer: [i32 * 10];
+    let mut localbuffer: [i32 * 10];
+    let mut win: COMM_Win; 
+    mpi.win_create(&mut sharebuffer as COMM_Buf, 3, 32, mpi.info_null, mpi.comms.world, &mut win);
+    
+    mpi.win_fence(0, win);    
+    sharebuffer(0) = world_rank;
+    sharebuffer(1) = world_rank * 2;
+    if (world_rank != 0) {
+        mpi.win_get(&mut localbuffer as COMM_MutBuf, 2, mpi.int_t, world_rank-1, 0, 2, mpi.int_t, win);
+    }
+    mpi.win_fence(0, win);
+    print_i32(world_rank);
+    print_string("get sharebuffer data");
+    print_i32(localbuffer(0));
+    print_i32(localbuffer(1));
+    print_string("\n");
+    let mut result = -1;
+    mpi.allreduce(&mut number as COMM_Buf, &mut result as COMM_Buf, 1, mpi.int_t, mpi.ops.sum);
+    print_string("result");
+    print_i32(result);
     // Finalize the MPI environment.
     mpi.finalize()
 }

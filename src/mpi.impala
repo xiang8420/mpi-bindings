@@ -5,6 +5,8 @@ type COMM_REQUEST = &();
 type COMM_STATUS = &mut [i8];
 type COMM_Buf = &[i8];
 type COMM_MutBuf = &mut [i8];
+type COMM_Info = &();
+type COMM_Win = &();
 
 extern "C" {
     fn MPI_Init() -> i32;
@@ -22,6 +24,13 @@ extern "C" {
     fn MPI_Allgather(COMM_Buf, i32, COMM_Datatype, COMM_MutBuf, i32, COMM_Datatype, COMM_COMM) -> i32;
     fn MPI_Barrier(COMM_COMM) -> i32;
     fn MPI_Wtime() -> f64;
+
+    fn MPI_Win_create(COMM_MutBuf, i32, i32, COMM_Info, COMM_COMM, &mut COMM_Win) -> i32;
+    fn MPI_Win_fence(i32, COMM_Win) -> i32;
+    fn MPI_Put(COMM_MutBuf, i32, COMM_Datatype, i32, i32, i32, COMM_Datatype, COMM_Win) -> i32;
+    fn MPI_Get(COMM_MutBuf, i32, COMM_Datatype, i32, i32, i32, COMM_Datatype, COMM_Win) -> i32;
+    fn MPI_Accumulate(COMM_MutBuf, i32, COMM_Datatype, i32, i32, i32, COMM_Datatype, COMM_Op, COMM_Win) -> i32;
+
     fn MPI_Finalize() -> i32;
     fn MPI_Finalized(&mut i32) -> i32;
     // wrappers in mpi.cpp for getting MPI constants
@@ -33,6 +42,7 @@ extern "C" {
     fn get_mpi_max() -> COMM_Op;
     fn get_mpi_sum() -> COMM_Op;
     fn get_mpi_status_ignore() -> COMM_STATUS;
+    fn get_mpi_info_null() -> COMM_Info;
 }
 
 struct MPIComms {
@@ -66,7 +76,8 @@ struct Communicator {
     double_t : COMM_Datatype,
     char_t: COMM_Datatype,
     byte_t: COMM_Datatype,
-
+    
+    info_null: COMM_Info,
     //first parameter: &int for number of Nodes, second parameter: &int for current rank
     init : fn(&mut i32, &mut i32) -> i32,
     initWithoutVars: fn() -> i32,
@@ -83,6 +94,14 @@ struct Communicator {
     get_count: fn(&mut MPIStatus, COMM_Datatype, &mut i32) -> i32,
     gather: fn(COMM_Buf, i32, COMM_Datatype, COMM_MutBuf, i32, COMM_Datatype, i32) -> i32,
     allgather: fn(COMM_Buf, i32, COMM_Datatype, COMM_MutBuf, i32, COMM_Datatype) -> i32,
+    
+    //mpi win for one side communication
+    win_create: fn(COMM_MutBuf, i32, i32, COMM_Info, COMM_COMM, &mut COMM_Win) -> i32,
+    win_fence: fn(i32, COMM_Win) -> i32,
+    win_put: fn(COMM_MutBuf, i32, COMM_Datatype, i32, i32, i32, COMM_Datatype, COMM_Win) -> i32,
+    win_get: fn(COMM_MutBuf, i32, COMM_Datatype, i32, i32, i32, COMM_Datatype, COMM_Win) -> i32,
+    win_accumulate:fn(COMM_MutBuf, i32, COMM_Datatype, i32, i32, i32, COMM_Datatype, COMM_Op, COMM_Win) -> i32,
+
     barrier : fn() -> i32,
     wtime : fn() -> f64,
     finalize : fn() -> i32,
@@ -116,7 +135,8 @@ fn @comm() -> Communicator {
         int_t : get_mpi_int(),
         char_t: get_mpi_char(),
         byte_t: get_mpi_byte(),
-
+        
+        info_null: get_mpi_info_null(),
         init : @|numNodes,rank| {
             let status = start_COMM();
             MPI_Comm_size(get_mpi_comm_world(),numNodes);
@@ -173,6 +193,21 @@ fn @comm() -> Communicator {
             MPI_Barrier(get_mpi_comm_world())
         },
         wtime : MPI_Wtime,
+        win_create: @|base, size, disp, info, comm, win|{
+            MPI_Win_create(base, size, disp, info, comm, win)
+        },
+        win_fence: @|assert, win|{
+            MPI_Win_fence(assert, win)
+        },
+        win_put: @|base, originsize, origintype, rank, disp, targetsize, targettype, win|{
+            MPI_Put(base, originsize, origintype, rank, disp, targetsize, targettype, win)
+        },
+        win_get: @|base, originsize, origintype, rank, disp, targetsize, targettype, win|{
+            MPI_Get(base, originsize, origintype, rank, disp, targetsize, targettype, win)
+        },
+        win_accumulate: @|base, originsize, origintype, rank, disp, targetsize, targettype, op, win|{
+            MPI_Accumulate(base, originsize, origintype, rank, disp, targetsize, targettype, op, win)
+        },
         finalize : @|| {
             //trick allows to call finalize multiple times
             let mut finalized = 0;
