@@ -16,4 +16,6 @@ MPI_Comm get_mpi_comm_world() { return MPI_COMM_WORLD; }
 
 MPI_Status* get_mpi_status_ignore() { return MPI_STATUS_IGNORE; }
 MPI_Info get_mpi_info_null() {return MPI_INFO_NULL; }
+
+MPI_Status* get_mpi_status_ignore() { return MPI_STATUS_IGNORE; }
 }
